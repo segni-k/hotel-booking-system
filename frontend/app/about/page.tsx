@@ -17,7 +17,7 @@ export default function AboutPage() {
     <div className="pt-20 pb-16">
       {/* Hero */}
       <section className="relative h-[50vh] min-h-[350px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-[url('/images/hero.jpg')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         <div className="relative z-10 text-center px-4">
           <motion.h1
@@ -64,7 +64,7 @@ export default function AboutPage() {
               transition={{ duration: 0.6 }}
               className="relative h-[350px] md:h-[450px] rounded-2xl overflow-hidden"
             >
-              <Image src="/images/hero-bg.jpg" alt="EliteStay" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+              <Image src="/images/hero.jpg" alt="EliteStay" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </motion.div>
           </div>
@@ -145,10 +145,10 @@ export default function AboutPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { name: 'Abebe Kebede', role: t.about.general_manager, image: '/images/team-1.jpg' },
-              { name: 'Sara Mulugeta', role: t.about.head_chef, image: '/images/team-2.jpg' },
-              { name: 'Daniel Hailu', role: t.about.concierge, image: '/images/team-3.jpg' },
-              { name: 'Hiwot Teshome', role: t.about.spa_director, image: '/images/team-4.jpg' },
+              { name: 'Abebe Kebede', role: t.about.general_manager, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop&crop=face' },
+              { name: 'Sara Mulugeta', role: t.about.head_chef, image: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=500&fit=crop&crop=face' },
+              { name: 'Daniel Hailu', role: t.about.concierge, image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=500&fit=crop&crop=face' },
+              { name: 'Hiwot Teshome', role: t.about.spa_director, image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=500&fit=crop&crop=face' },
             ].map((member, i) => (
               <motion.div
                 key={member.name}

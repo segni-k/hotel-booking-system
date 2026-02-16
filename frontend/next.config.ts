@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  // Remove 'standalone' for Vercel — Vercel handles output natively.
+  // Use 'standalone' only for Docker/self-hosted deployments.
+  // output: 'standalone',
   eslint: {
     ignoreDuringBuilds: true,
   },

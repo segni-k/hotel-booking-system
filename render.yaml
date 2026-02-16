@@ -1,0 +1,84 @@
+# ============================================================
+# Render Blueprint — Hotel Booking System (Backend)
+# ============================================================
+# Deploy: connect this repo on Render → it auto-detects this file
+# Docs:   https://render.com/docs/blueprint-spec
+# ============================================================
+
+services:
+  # ── Laravel API ──────────────────────────────────────────
+  - type: web
+    name: hotel-booking-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: oregon
+    plan: free            # free tier; upgrade as needed
+    healthCheckPath: /api/v1/hotels
+    envVars:
+      - key: APP_NAME
+        value: "Hotel Booking API"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_TIMEZONE
+        value: Africa/Addis_Ababa
+      - key: APP_URL
+        sync: false       # set after first deploy (e.g. https://hotel-booking-api.onrender.com)
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_LOCALE
+        value: en
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+
+      # ── Database (auto-linked from the database below) ──
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hotel-booking-db
+          property: connectionString
+
+      # ── Session / Cache / Queue ──
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+
+      # ── Sanctum ──
+      - key: SANCTUM_STATEFUL_DOMAINS
+        sync: false       # set to your Vercel domain (e.g. elitestay.vercel.app)
+
+      # ── CORS / Frontend ──
+      - key: FRONTEND_URL
+        sync: false       # set to your Vercel URL (e.g. https://elitestay.vercel.app)
+
+      # ── Chapa Payment ──
+      - key: CHAPA_SECRET_KEY
+        sync: false       # paste your Chapa secret key
+      - key: CHAPA_WEBHOOK_SECRET
+        sync: false
+      - key: CHAPA_BASE_URL
+        value: "https://api.chapa.co/v1"
+
+      # ── Mail (use log in dev; switch to smtp for production) ──
+      - key: MAIL_MAILER
+        value: log
+
+      # ── Booking ──
+      - key: BOOKING_EXPIRY_MINUTES
+        value: "15"
+
+databases:
+  # ── PostgreSQL ───────────────────────────────────────────
+  - name: hotel-booking-db
+    plan: free            # free tier (90 days); upgrade as needed
+    databaseName: hotel_booking
+    user: hotel_admin
+    region: oregon

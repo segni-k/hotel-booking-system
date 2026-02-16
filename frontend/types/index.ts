@@ -4,13 +4,16 @@
 
 export interface User {
   id: number;
-  name: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  name: string; // alias for full_name
   email: string;
   phone?: string;
-  role: string;
-  email_verified_at?: string;
+  is_active: boolean;
+  roles?: { id: number; name: string }[];
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface Hotel {
@@ -222,7 +225,8 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   password: string;
   password_confirmation: string;
@@ -230,9 +234,9 @@ export interface RegisterData {
 }
 
 export interface AuthResponse {
+  message: string;
   user: User;
   token: string;
-  token_type: string;
 }
 
 // Language types

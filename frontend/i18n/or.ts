@@ -173,6 +173,12 @@ const or: TranslationKeys = {
     checked_out: 'Ba\'eera',
     cancelled: 'Haqameera',
     expired: 'Yeroon isaa darbee jira',
+    login_to_book: 'Kutaa qabachuuf maaloo gara herrega keessaniitti seenaa.',
+    payment_method: 'Mala Kaffaltii',
+    pay_at_hotel: 'Hooteelatti Kaffali',
+    pay_at_hotel_desc: 'Qallaba ykn kaardii yeroo check-in',
+    pay_now: 'Amma Kaffali',
+    pay_now_desc: 'Chapa-dhaan online kaffali',
   },
 
   payment: {

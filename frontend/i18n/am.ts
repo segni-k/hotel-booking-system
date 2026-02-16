@@ -173,6 +173,12 @@ const am: TranslationKeys = {
     checked_out: 'ወጥቷል',
     cancelled: 'ተሰርዟል',
     expired: 'ጊዜው አልፎበታል',
+    login_to_book: 'ክፍል ለማስያዝ እባክዎ ወደ መለያዎ ይግቡ።',
+    payment_method: 'የክፍያ ዘዴ',
+    pay_at_hotel: 'በሆቴል ይክፈሉ',
+    pay_at_hotel_desc: 'በቼክ-ኢን ጊዜ በጥሬ ገንዘብ ወይም በካርድ',
+    pay_now: 'አሁን ይክፈሉ',
+    pay_now_desc: 'በChapa በመስመር ላይ ይክፈሉ',
   },
 
   payment: {

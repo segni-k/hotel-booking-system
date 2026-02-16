@@ -1,20 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { FiMail, FiLock, FiUser, FiPhone, FiEye, FiEyeOff } from 'react-icons/fi';
-import toast from 'react-hot-toast';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { t } = useLanguage();
   const { register, isLoading: loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/';
   const [form, setForm] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     password: '',
@@ -25,7 +27,8 @@ export default function RegisterPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!form.name) errs.name = t.errors.required;
+    if (!form.first_name) errs.first_name = t.errors.required;
+    if (!form.last_name) errs.last_name = t.errors.required;
     if (!form.email) errs.email = t.errors.required;
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = t.errors.invalid_email;
     if (!form.phone) errs.phone = t.errors.required;
@@ -39,12 +42,9 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    try {
-      await register(form);
-      toast.success(t.auth.register_success);
-      router.push('/');
-    } catch {
-      toast.error(t.errors.register_failed);
+    const success = await register(form);
+    if (success) {
+      router.push(redirect);
     }
   };
 
@@ -80,15 +80,28 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                {t.auth.full_name}
-              </label>
-              <div className="relative">
-                <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input type="text" value={form.name} onChange={handleChange('name')} className={inputClass} placeholder="John Doe" />
+            {/* Name fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  {t.booking.first_name}
+                </label>
+                <div className="relative">
+                  <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input type="text" value={form.first_name} onChange={handleChange('first_name')} className={inputClass} placeholder="Abebe" />
+                </div>
+                {errors.first_name && <p className="text-xs text-red-500 mt-1">{errors.first_name}</p>}
               </div>
-              {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  {t.booking.last_name}
+                </label>
+                <div className="relative">
+                  <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input type="text" value={form.last_name} onChange={handleChange('last_name')} className={inputClass} placeholder="Kebede" />
+                </div>
+                {errors.last_name && <p className="text-xs text-red-500 mt-1">{errors.last_name}</p>}
+              </div>
             </div>
 
             {/* Email */}
@@ -199,5 +212,13 @@ export default function RegisterPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-2 border-[#D4A853] border-t-transparent rounded-full" /></div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

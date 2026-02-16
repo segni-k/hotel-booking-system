@@ -49,8 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = async () => {
     try {
-      const response = await api.get<{ data: User }>('/auth/user');
-      setUser(response.data.data);
+      const response = await api.get('/auth/user');
+      const userData = response.data.user || response.data.data;
+      // Normalize: ensure 'name' field exists
+      if (userData && !userData.name) {
+        userData.name = userData.full_name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim();
+      }
+      setUser(userData);
     } catch {
       // Token expired or invalid
       clearAuth();
@@ -66,12 +71,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (credentials: LoginCredentials): Promise<boolean> => {
     try {
-      const response = await api.post<{ data: AuthResponse }>('/auth/login', credentials);
-      const { user, token } = response.data.data;
-      setUser(user);
-      setToken(token);
-      localStorage.setItem('elitestay-token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const response = await api.post('/auth/login', credentials);
+      const resData = response.data;
+      // Backend returns { message, user, token } or { data: { user, token } }
+      const userData = resData.data?.user || resData.user;
+      const tokenValue = resData.data?.token || resData.token;
+      // Normalize name
+      if (userData && !userData.name) {
+        userData.name = userData.full_name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim();
+      }
+      setUser(userData);
+      setToken(tokenValue);
+      localStorage.setItem('elitestay-token', tokenValue);
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenValue}`;
       toast.success(t.auth.login_success);
       return true;
     } catch (error: unknown) {
@@ -83,12 +95,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (data: RegisterData): Promise<boolean> => {
     try {
-      const response = await api.post<{ data: AuthResponse }>('/auth/register', data);
-      const { user, token } = response.data.data;
-      setUser(user);
-      setToken(token);
-      localStorage.setItem('elitestay-token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const response = await api.post('/auth/register', data);
+      const resData = response.data;
+      const userData = resData.data?.user || resData.user;
+      const tokenValue = resData.data?.token || resData.token;
+      // Normalize name
+      if (userData && !userData.name) {
+        userData.name = userData.full_name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim();
+      }
+      setUser(userData);
+      setToken(tokenValue);
+      localStorage.setItem('elitestay-token', tokenValue);
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenValue}`;
       toast.success(t.auth.register_success);
       return true;
     } catch (error: unknown) {

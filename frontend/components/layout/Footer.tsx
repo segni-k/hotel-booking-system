@@ -10,9 +10,9 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-16 bg-gray-900 dark:bg-[#020617] text-gray-300">
+    <footer className="mt-24 bg-gray-900 dark:bg-[#020617] text-gray-300">
       {/* Main Footer */}
-      <div className="container-custom py-16">
+      <div className="container-custom pt-20 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="lg:col-span-1">
@@ -107,7 +107,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
-        <div className="container-custom py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="container-custom py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-500">
             {t.footer.copyright.replace('{year}', year.toString())}
           </p>

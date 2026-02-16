@@ -178,6 +178,12 @@ const en = {
     checked_out: 'Checked Out',
     cancelled: 'Cancelled',
     expired: 'Expired',
+    login_to_book: 'Please sign in to your account to book a room.',
+    payment_method: 'Payment Method',
+    pay_at_hotel: 'Pay at Hotel',
+    pay_at_hotel_desc: 'Cash or card at check-in',
+    pay_now: 'Pay Now',
+    pay_now_desc: 'Pay online via Chapa',
   },
 
   // Payment

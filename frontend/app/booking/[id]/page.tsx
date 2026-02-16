@@ -1,51 +1,107 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
 import {
-  FiCalendar, FiUsers, FiArrowLeft, FiArrowRight, FiCheck, FiCreditCard, FiUser, FiMail, FiPhone,
+  FiCalendar, FiUsers, FiArrowLeft, FiArrowRight, FiCheck, FiCreditCard, FiUser, FiMail, FiPhone, FiLock,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
-const roomsMap: Record<string, { name: string; price: number; image: string; bedType: string; maxGuests: number }> = {
-  '1': { name: 'Standard Room - City View', price: 3500, image: '/images/standard-1.jpg', bedType: 'Queen', maxGuests: 2 },
-  '2': { name: 'Standard Room - Garden View', price: 3800, image: '/images/standard-2.jpg', bedType: 'Queen', maxGuests: 2 },
-  '3': { name: 'Standard Twin Room', price: 3200, image: '/images/standard-3.jpg', bedType: 'Twin', maxGuests: 2 },
-  '4': { name: 'Standard Room - Corner', price: 4000, image: '/images/standard-4.jpg', bedType: 'King', maxGuests: 2 },
-  '5': { name: 'Deluxe Suite', price: 6500, image: '/images/deluxe-1.jpg', bedType: 'King', maxGuests: 3 },
-  '6': { name: 'Deluxe Room - Balcony', price: 7000, image: '/images/deluxe-2.jpg', bedType: 'King', maxGuests: 2 },
-  '7': { name: 'Deluxe Family Room', price: 7500, image: '/images/deluxe-3.jpg', bedType: 'King + Twin', maxGuests: 4 },
-  '8': { name: 'Deluxe Corner Suite', price: 8000, image: '/images/deluxe-4.jpg', bedType: 'King', maxGuests: 3 },
-  '9': { name: 'Presidential Suite - Royal', price: 12000, image: '/images/presidential-1.jpg', bedType: 'King', maxGuests: 4 },
-  '10': { name: 'Presidential Suite - Sky', price: 13000, image: '/images/presidential-2.jpg', bedType: 'King', maxGuests: 4 },
-  '11': { name: 'Presidential Suite - Heritage', price: 14000, image: '/images/presidential-3.jpg', bedType: 'King + Queen', maxGuests: 6 },
-  '12': { name: 'Presidential Suite - Grand', price: 15000, image: '/images/presidential-4.jpg', bedType: 'King + Queen', maxGuests: 6 },
+// Static room data fallback
+const roomsMap: Record<string, { name: string; price: number; image: string; bedType: string; maxGuests: number; roomTypeId: number; hotelId: number }> = {
+  '1': { name: 'Standard Room - City View', price: 3500, image: '/images/standard-1.jpg', bedType: 'Queen', maxGuests: 2, roomTypeId: 1, hotelId: 1 },
+  '2': { name: 'Standard Room - Garden View', price: 3800, image: '/images/standard-2.jpg', bedType: 'Queen', maxGuests: 2, roomTypeId: 1, hotelId: 1 },
+  '3': { name: 'Standard Twin Room', price: 3200, image: '/images/standard-3.jpg', bedType: 'Twin', maxGuests: 2, roomTypeId: 1, hotelId: 1 },
+  '4': { name: 'Standard Room - Corner', price: 4000, image: '/images/standard-4.jpg', bedType: 'King', maxGuests: 2, roomTypeId: 1, hotelId: 1 },
+  '5': { name: 'Deluxe Suite', price: 6500, image: '/images/deluxe-1.jpg', bedType: 'King', maxGuests: 3, roomTypeId: 2, hotelId: 1 },
+  '6': { name: 'Deluxe Room - Balcony', price: 7000, image: '/images/deluxe-2.jpg', bedType: 'King', maxGuests: 2, roomTypeId: 2, hotelId: 1 },
+  '7': { name: 'Deluxe Family Room', price: 7500, image: '/images/deluxe-3.jpg', bedType: 'King + Twin', maxGuests: 4, roomTypeId: 2, hotelId: 1 },
+  '8': { name: 'Deluxe Corner Suite', price: 8000, image: '/images/deluxe-4.jpg', bedType: 'King', maxGuests: 3, roomTypeId: 2, hotelId: 1 },
+  '9': { name: 'Presidential Suite - Royal', price: 12000, image: '/images/presidential-1.jpg', bedType: 'King', maxGuests: 4, roomTypeId: 3, hotelId: 1 },
+  '10': { name: 'Presidential Suite - Sky', price: 13000, image: '/images/presidential-2.jpg', bedType: 'King', maxGuests: 4, roomTypeId: 3, hotelId: 1 },
+  '11': { name: 'Presidential Suite - Heritage', price: 14000, image: '/images/presidential-3.jpg', bedType: 'King + Queen', maxGuests: 6, roomTypeId: 3, hotelId: 1 },
+  '12': { name: 'Presidential Suite - Grand', price: 15000, image: '/images/presidential-4.jpg', bedType: 'King + Queen', maxGuests: 6, roomTypeId: 3, hotelId: 1 },
 };
 
 const steps = ['dates', 'guest', 'review'] as const;
 
 export default function BookingPage() {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   const room = roomsMap[id];
   const [step, setStep] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     checkIn: '', checkOut: '', guests: 1,
-    firstName: user?.name?.split(' ')[0] || '',
-    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
-    email: user?.email || '',
+    firstName: '',
+    lastName: '',
+    email: '',
     phone: '',
     specialRequests: '',
+    paymentMethod: 'pay_at_hotel' as 'pay_now' | 'pay_at_hotel',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Pre-fill form with user data once authenticated
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        firstName: prev.firstName || user.first_name || user.name?.split(' ')[0] || '',
+        lastName: prev.lastName || user.last_name || user.name?.split(' ').slice(1).join(' ') || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phone || '',
+      }));
+    }
+  }, [user]);
+
+  // Redirect to login if not authenticated (after loading)
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <div className="pt-20 pb-16 bg-gray-50 dark:bg-[#0F172A] min-h-screen">
+        <div className="container-custom max-w-md mt-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-[#1E293B] rounded-2xl p-8 border border-gray-100 dark:border-gray-700/50 shadow-xl dark:shadow-black/30 text-center"
+          >
+            <div className="w-16 h-16 mx-auto mb-5 bg-[#D4A853]/10 rounded-full flex items-center justify-center">
+              <FiLock className="text-[#D4A853]" size={28} />
+            </div>
+            <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-bold text-gray-900 dark:text-white mb-3">
+              {t.auth.login_required || 'Login Required'}
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+              {t.booking.login_to_book || 'Please sign in to your account to book a room.'}
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link
+                href={`/auth/login?redirect=/booking/${id}`}
+                className="w-full py-3 text-white font-semibold bg-gradient-gold rounded-xl hover:shadow-lg hover:shadow-[#D4A853]/25 transition-all text-center"
+              >
+                {t.nav.login}
+              </Link>
+              <Link
+                href={`/auth/register?redirect=/booking/${id}`}
+                className="w-full py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-center"
+              >
+                {t.nav.register}
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   if (!room) {
     return (
@@ -83,9 +139,59 @@ export default function BookingPage() {
   const nextStep = () => { if (validateStep()) setStep((s) => Math.min(s + 1, steps.length - 1)); };
   const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
-  const handleConfirm = () => {
-    toast.success(t.booking.booking_success);
-    router.push(`/booking/${id}/confirmation?checkIn=${form.checkIn}&checkOut=${form.checkOut}&nights=${nights}&total=${totalPrice}`);
+  const handleConfirm = async () => {
+    setSubmitting(true);
+    try {
+      // Call backend API to create booking
+      const bookingData = {
+        hotel_id: room.hotelId,
+        room_type_id: room.roomTypeId,
+        check_in_date: form.checkIn,
+        check_out_date: form.checkOut,
+        number_of_adults: form.guests,
+        number_of_children: 0,
+        payment_method: form.paymentMethod,
+        special_requests: form.specialRequests || undefined,
+        guests: [{
+          first_name: form.firstName,
+          last_name: form.lastName,
+          email: form.email,
+          phone: form.phone,
+          guest_type: 'adult',
+          is_primary: true,
+        }],
+      };
+
+      const response = await api.post('/bookings', bookingData);
+      const booking = response.data?.data;
+      const bookingNumber = booking?.booking_number || `ES-${Date.now().toString(36).toUpperCase()}`;
+
+      toast.success(t.booking.booking_success);
+
+      // If pay_now, redirect to payment
+      if (form.paymentMethod === 'pay_now' && booking?.id) {
+        try {
+          const paymentRes = await api.post('/payments/chapa/initialize', {
+            booking_id: booking.id,
+          });
+          const checkoutUrl = paymentRes.data?.data?.checkout_url;
+          if (checkoutUrl) {
+            window.location.href = checkoutUrl;
+            return;
+          }
+        } catch {
+          // Payment init failed, still redirect to confirmation
+          toast.error('Payment initialization failed. You can pay at the hotel.');
+        }
+      }
+
+      router.push(`/booking/${id}/confirmation?ref=${bookingNumber}&checkIn=${form.checkIn}&checkOut=${form.checkOut}&nights=${nights}&total=${totalPrice}`);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(err.response?.data?.message || err.response?.data?.error || 'Booking failed. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -238,6 +344,37 @@ export default function BookingPage() {
                         <p className="text-sm text-gray-700 dark:text-gray-300">{form.specialRequests}</p>
                       </div>
                     )}
+
+                    {/* Payment Method */}
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{t.booking.payment_method || 'Payment Method'}</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, paymentMethod: 'pay_at_hotel' })}
+                          className={`p-4 rounded-xl border-2 text-left transition-all ${
+                            form.paymentMethod === 'pay_at_hotel'
+                              ? 'border-[#D4A853] bg-[#D4A853]/5'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="text-sm font-semibold text-gray-900 dark:text-white">{t.booking.pay_at_hotel || 'Pay at Hotel'}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.booking.pay_at_hotel_desc || 'Cash or card at check-in'}</div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, paymentMethod: 'pay_now' })}
+                          className={`p-4 rounded-xl border-2 text-left transition-all ${
+                            form.paymentMethod === 'pay_now'
+                              ? 'border-[#D4A853] bg-[#D4A853]/5'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="text-sm font-semibold text-gray-900 dark:text-white">{t.booking.pay_now || 'Pay Now'}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.booking.pay_now_desc || 'Pay online via Chapa'}</div>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -253,8 +390,21 @@ export default function BookingPage() {
                       {t.common.next} <FiArrowRight size={16} />
                     </button>
                   ) : (
-                    <button onClick={handleConfirm} className="flex items-center gap-2 px-6 py-2.5 bg-gradient-gold text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#D4A853]/25 transition-all">
-                      <FiCheck size={16} /> {t.booking.confirm_booking}
+                    <button
+                      onClick={handleConfirm}
+                      disabled={submitting}
+                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-gold text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#D4A853]/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                          {t.common.loading}
+                        </>
+                      ) : (
+                        <>
+                          <FiCheck size={16} /> {t.booking.confirm_booking}
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
