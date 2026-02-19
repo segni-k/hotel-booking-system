@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -10,13 +10,20 @@ import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 
 function LoginForm() {
   const { t } = useLanguage();
-  const { login, isLoading: loading } = useAuth();
+  const { login, isLoading: loading, isAuthenticated } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(redirect);
+    }
+  }, [isAuthenticated, router, redirect]);
 
   const validate = () => {
     const errs: Record<string, string> = {};

@@ -87,8 +87,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.success(t.auth.login_success);
       return true;
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || t.common.error);
+      const err = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
+      const data = err.response?.data;
+      if (data?.errors) {
+        const firstError = Object.values(data.errors)[0]?.[0];
+        toast.error(firstError || data?.message || t.common.error);
+      } else {
+        toast.error(data?.message || t.common.error);
+      }
       return false;
     }
   }, [t]);
@@ -110,8 +116,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.success(t.auth.register_success);
       return true;
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || t.common.error);
+      const err = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
+      const data = err.response?.data;
+      if (data?.errors) {
+        const firstError = Object.values(data.errors)[0]?.[0];
+        toast.error(firstError || data?.message || t.common.error);
+      } else {
+        toast.error(data?.message || t.common.error);
+      }
       return false;
     }
   }, [t]);
