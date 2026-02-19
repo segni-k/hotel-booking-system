@@ -5,6 +5,15 @@ COPY composer.json composer.lock* ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --ignore-platform-reqs
 
 COPY . .
+
+# Create required Laravel directories (may be empty/missing from git)
+RUN mkdir -p \
+    storage/logs \
+    storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    bootstrap/cache
+
 RUN composer dump-autoload --optimize --no-dev
 
 # ---- Production Stage ----
