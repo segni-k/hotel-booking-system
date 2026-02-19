@@ -42,17 +42,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const toggleTheme = () => setThemeState(prev => (prev === 'light' ? 'dark' : 'light'));
   const setTheme = (t: Theme) => setThemeState(t);
 
-  if (!mounted) {
-    return (
-      <ThemeContext.Provider value={{ theme: 'light', toggleTheme, setTheme }}>
-        <div className="min-h-screen">{children}</div>
-      </ThemeContext.Provider>
-    );
-  }
-
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      <div className={`${theme === 'dark' ? 'dark' : ''} min-h-screen`}>
+    <ThemeContext.Provider value={{ theme: mounted ? theme : 'light', toggleTheme, setTheme }}>
+      <div className="min-h-screen" suppressHydrationWarning>
         {children}
       </div>
     </ThemeContext.Provider>

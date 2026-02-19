@@ -8,7 +8,7 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev
 
 # ---- Production Stage ----
-FROM php:8.2-fpm-alpine AS production
+FROM php:8.4-fpm-alpine AS production
 
 # Install system dependencies
 RUN apk add --no-cache \
