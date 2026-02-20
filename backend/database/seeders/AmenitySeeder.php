@@ -29,12 +29,15 @@ class AmenitySeeder extends Seeder
         ];
 
         foreach ($amenities as $amenity) {
-            Amenity::create([
-                'name' => $amenity['name'],
-                'slug' => Str::slug($amenity['name']),
-                'icon' => $amenity['icon'],
-                'is_active' => true,
-            ]);
+            Amenity::firstOrCreate(
+                ['slug' => Str::slug($amenity['name'])],
+                [
+                    'name' => $amenity['name'],
+                    'slug' => Str::slug($amenity['name']),
+                    'icon' => $amenity['icon'],
+                    'is_active' => true,
+                ]
+            );
         }
     }
 }
