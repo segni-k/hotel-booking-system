@@ -5,8 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BookingResource\Pages;
 use App\Models\Booking;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -14,13 +14,13 @@ class BookingResource extends Resource
 {
     protected static ?string $model = Booking::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar';
 
     protected static ?int $navigationSort = 3;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
                 Forms\Components\Section::make('Booking Information')
                     ->schema([
@@ -35,7 +35,7 @@ class BookingResource extends Resource
                             ->relationship('hotel', 'name')
                             ->required()
                             ->searchable()
-                            ->reactive(),
+                            ->live(),
                         Forms\Components\Select::make('room_type_id')
                             ->relationship('roomType', 'name')
                             ->required()
@@ -111,15 +111,17 @@ class BookingResource extends Resource
                 Tables\Columns\TextColumn::make('total_amount')
                     ->money('ETB')
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'confirmed',
-                        'primary' => 'checked_in',
-                        'success' => 'checked_out',
-                        'danger' => 'cancelled',
-                        'danger' => 'no_show',
-                    ])
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'confirmed' => 'success',
+                        'checked_in' => 'primary',
+                        'checked_out' => 'success',
+                        'cancelled' => 'danger',
+                        'no_show' => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

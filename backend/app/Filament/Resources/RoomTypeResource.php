@@ -5,8 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\RoomTypeResource\Pages;
 use App\Models\RoomType;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -14,13 +14,13 @@ class RoomTypeResource extends Resource
 {
     protected static ?string $model = RoomType::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
                 Forms\Components\Section::make('Room Type Information')
                     ->schema([
