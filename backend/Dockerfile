@@ -12,7 +12,8 @@ RUN mkdir -p \
     storage/framework/cache/data \
     storage/framework/sessions \
     storage/framework/views \
-    bootstrap/cache
+    bootstrap/cache \
+    resources/views
 
 RUN composer dump-autoload --optimize --no-dev
 

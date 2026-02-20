@@ -14,7 +14,11 @@ php artisan storage:link --force 2>/dev/null || true
 # Cache configuration for production
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
+
+# Only cache views if the directory exists and has files
+if [ -d "resources/views" ] && [ "$(ls -A resources/views 2>/dev/null)" ]; then
+    php artisan view:cache
+fi
 
 # Run migrations
 php artisan migrate --force
