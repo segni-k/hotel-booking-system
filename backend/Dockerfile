@@ -78,7 +78,9 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Create nginx pid directory
 RUN mkdir -p /run/nginx
 
-EXPOSE 8000
+# Render sets PORT dynamically (default 10000)
+ENV PORT=10000
+EXPOSE ${PORT}
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
